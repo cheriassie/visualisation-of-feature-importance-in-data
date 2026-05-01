@@ -9,9 +9,6 @@ import CorrelationsTab from "./components/tabs/CorrelationsTab";
 import FeatureImportanceTab from "./components/tabs/FeatureImportanceTab";
 import RuleAnalyticsTab from "./components/tabs/RuleAnalyticsTab";
 import ChordVisualizationTab from "./components/tabs/ChordVisualizationTab";
-import ExplanationsTab from "./components/tabs/ExplanationsTab";
-import RawCalculationsTab from "./components/tabs/RawCalculationsTab";
-
 const TABS: { key: Tab; label: string }[] = [
   { key: "summary", label: "Summary" },
   { key: "attributes", label: "Attributes" },
@@ -19,8 +16,6 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "feature-importance", label: "Feature Importance" },
   { key: "rule-analytics", label: "Rule Analytics" },
   { key: "chord", label: "Chord & Coral" },
-  { key: "explanations", label: "Explanations" },
-  { key: "raw-calculations", label: "Raw Calculations" },
 ];
 
 function renderActiveTab(data: Output, tab: Tab) {
@@ -49,10 +44,6 @@ function renderActiveTab(data: Output, tab: Tab) {
           targetInfo={data.target_info}
         />
       );
-    case "explanations":
-      return <ExplanationsTab rules={data.rules} />;
-    case "raw-calculations":
-      return <RawCalculationsTab rules={data.rules} />;
   }
 }
 
@@ -101,7 +92,7 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 md:p-6 max-w-[1400px] mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-accent">
-        Coral Plot — Feature Importance Visualization
+        Feature Importance Visualization
       </h1>
 
       <div className="tab-bar">

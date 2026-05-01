@@ -174,8 +174,6 @@ export type Tab =
   | "summary"
   | "attributes"
   | "correlations"
-  | "explanations"
   | "feature-importance"
   | "rule-analytics"
-  | "chord"
-  | "raw-calculations";
+  | "chord";
