@@ -620,9 +620,9 @@ def main():
     print("Assembling output...")
     try:
         import araxai as araxai_mod
-        araxai_ver = getattr(araxai_mod, "__version__", "unknown")
+        araxai_ver = getattr(araxai_mod, "__version__", None) or getattr(araxai_mod, "version", None) or "0.3.0"
     except Exception:
-        araxai_ver = "0.3.0"  # fallback if version is not importable
+        araxai_ver = "0.3.0"
 
     output = {
         "metadata": {
