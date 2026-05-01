@@ -5,7 +5,12 @@ import type { CoralTreeNode } from "../types";
 import { FEATURES, COLOR_NEUTRAL } from "../utils/chartStyles";
 import { boosterColor } from "../utils/treeHelpers";
 
-export default function DrillDownBarChart({ tree }: { tree: CoralTreeNode }) {
+interface DrillDownProps {
+  tree: CoralTreeNode;
+  targetInfo?: { target_class: string; baseline_ratio: number };
+}
+
+export default function DrillDownBarChart({ tree, targetInfo }: DrillDownProps) {
   const [path, setPath] = useState<CoralTreeNode[]>([tree]);
 
   const current = path[path.length - 1];
@@ -22,7 +27,7 @@ export default function DrillDownBarChart({ tree }: { tree: CoralTreeNode }) {
 
   return (
     <div className="glass-panel">
-      <div className="flex gap-1 flex-wrap mb-4 text-sm">
+      <div className="flex gap-1 flex-wrap mb-2 text-sm">
         {path.map((p, i) => (
           <span key={i}>
             {i > 0 && <span className="text-muted"> › </span>}
@@ -30,11 +35,23 @@ export default function DrillDownBarChart({ tree }: { tree: CoralTreeNode }) {
               className="text-blue-400 hover:underline"
               onClick={() => goBack(i)}
             >
-              {p.label || "Fatal"}
+              {p.label || (targetInfo?.target_class ?? "Root")}
             </button>
           </span>
         ))}
       </div>
+      <p className="text-xs text-muted mb-4">
+        Current node: <strong>{current.label || (targetInfo?.target_class ?? "Root")}</strong>
+        {"-"}target ratio:{" "}
+        <span className="font-mono">
+          {current.target_ratio != null
+            ? (current.target_ratio * 100).toFixed(2) + "%"
+            : targetInfo
+              ? (targetInfo.baseline_ratio * 100).toFixed(2) + "% (baseline)"
+              : "N/A"}
+        </span>
+        {current.support != null && <>{"-"}support: <span className="font-mono">{current.support}</span></>}
+      </p>
 
       {children.length === 0 ? (
         <p className="text-muted">No child nodes at this level.</p>
@@ -73,6 +90,10 @@ export default function DrillDownBarChart({ tree }: { tree: CoralTreeNode }) {
 
                 <span className="text-sm font-mono w-20 text-right" style={{ color: col }}>
                   {sym}{bv.toFixed(2)}
+                </span>
+
+                <span className="text-xs font-mono w-16 text-right text-muted">
+                  {child.target_ratio != null ? (child.target_ratio * 100).toFixed(2) + "%" : ""}
                 </span>
 
                 {hasKids && (
