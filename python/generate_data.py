@@ -659,8 +659,17 @@ def main():
         "coral_tree": coral_tree,
     }
 
+    def sanitize(obj):
+        if isinstance(obj, float) and (obj != obj):
+            return None
+        if isinstance(obj, dict):
+            return {k: sanitize(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [sanitize(v) for v in obj]
+        return obj
+
     with open(output_path, "w") as f:
-        json.dump(output, f, indent=2, default=str)
+        json.dump(sanitize(output), f, indent=2, default=str)
 
     print(f"\nDone. Output written to {output_path}")
     print(f"File size: {os.path.getsize(output_path) / (1024 * 1024):.1f} MB")
