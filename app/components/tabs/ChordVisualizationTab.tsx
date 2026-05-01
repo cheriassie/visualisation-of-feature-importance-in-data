@@ -123,6 +123,7 @@ export default function ChordVisualizationTab({
         if (!chordData) return null;
         return (
           <div className="space-y-4">
+            <p className="text-sm text-muted">The chord diagram shows how often features appear together in association rules. Thicker ribbons mean more co-occurrences. Use the sliders to filter out weak or rare connections.</p>
             <div className="glass-panel flex gap-6 flex-wrap items-end">
               <RangeControl label="Max Connections" min={1} max={100} value={maxConnections} onChange={setMaxConnections} />
               <RangeControl label="Min Relative Strength" min={0} max={1} step={0.01} value={minRelStrength} display={minRelStrength.toFixed(2)} onChange={setMinRelStrength} />
@@ -143,8 +144,9 @@ export default function ChordVisualizationTab({
               <RangeControl label="Min Support" min={0} max={1000} step={10} value={minSupport} onChange={setMinSupport} />
             </div>
             <div className="glass-panel text-xs space-y-3 text-muted">
+              <p className="text-fg text-sm mb-2">The coral plot shows association rules as a radial tree. The target class (Fatal) sits at the centre. Each branch is a rule condition — the further from the centre, the deeper the rule. Line colour shows whether a condition increases or decreases fatal risk, and how strongly.</p>
               <div className="flex gap-5 flex-wrap items-center">
-                <span className="font-semibold text-fg">Nodes</span>
+                <span className="font-semibold text-fg">Node colour = feature</span>
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-500" /> Fatal (centre)
                 </div>
@@ -155,20 +157,26 @@ export default function ChordVisualizationTab({
                 ))}
               </div>
               <div className="flex gap-5 flex-wrap items-center">
-                <span className="font-semibold text-fg">Lines</span>
+                <span className="font-semibold text-fg">Line colour = direction &amp; strength</span>
                 <div className="flex items-center gap-1.5">
-                  <span className="inline-block w-[22px] h-[3px] bg-orange-500 rounded-sm" /> Weak increase (×)
+                  <span className="inline-block w-[22px] h-[3px] rounded-sm" style={{background: "#f39c12"}} /> Weak increase (×)
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="inline-block w-[22px] h-[3px] bg-red-500 rounded-sm" /> Strong increase (×)
+                  <span className="inline-block w-[22px] h-[3px] rounded-sm" style={{background: "#c0392b"}} /> Strong increase (×)
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="#3498db" strokeWidth="3" strokeDasharray="4,3" /></svg> Weak decrease (÷)
+                  <svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="#93c5fd" strokeWidth="3" strokeDasharray="4,3" /></svg> Weak decrease (÷)
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="#16a085" strokeWidth="3" strokeDasharray="4,3" /></svg> Strong decrease (÷)
+                  <svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="#1d4ed8" strokeWidth="3" strokeDasharray="4,3" /></svg> Strong decrease (÷)
                 </div>
-                <div>| Each ring = next rule step | Thicker path = higher support</div>
+              </div>
+              <div className="flex gap-5 flex-wrap items-center">
+                <span className="font-semibold text-fg">Reading the plot</span>
+                <span>Each ring = one level deeper in the rule</span>
+                <span>Thicker line = more records support this rule</span>
+                <span>Dashed line = decreases fatal risk</span>
+                <span>Solid line = increases fatal risk</span>
               </div>
             </div>
             <CoralPlotV2
@@ -184,13 +192,19 @@ export default function ChordVisualizationTab({
         );
 
       case "drilldown":
-        return coralTree ? <DrillDownBarChart tree={coralTree} /> : null;
+        return coralTree ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted">Click any bar to drill into its child conditions. The breadcrumb at the top lets you go back. Bar colour shows the direction — warm colours mean the condition increases fatal risk (×), cool blue means it decreases it (÷). The number on the right is the booster value.</p>
+            <DrillDownBarChart tree={coralTree} />
+          </div>
+        ) : null;
 
       case "matrix":
         if (!chordData) return null;
         return (
           <div className="glass-panel overflow-x-auto">
             <h3 className="text-lg font-semibold mb-3 text-accent">Co-occurrence Matrix</h3>
+            <p className="text-sm text-muted mb-3">Each cell shows how many rules contain both the row feature and the column feature. Higher values (darker blue) mean those two features are often found together in the mined rules.</p>
             <table className="heatmap-table">
               <thead>
                 <tr>
@@ -229,6 +243,7 @@ export default function ChordVisualizationTab({
         return (
           <div className="glass-panel">
             <h3 className="text-lg font-semibold mb-3 text-accent">Ranked Feature Pairs</h3>
+            <p className="text-sm text-muted mb-3">A flat list of all feature pairs sorted by how often they co-occur. You can re-sort by source or target name to find specific features faster.</p>
             <div className="flex gap-3 mb-3">
               {PAIR_SORT_BUTTONS.map(({ key, label }) => (
                 <button

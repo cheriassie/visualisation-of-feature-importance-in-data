@@ -15,6 +15,7 @@ export default function CorrelationsTab({ correlations }: CorrelationsTabProps) 
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-muted">This heatmap shows how strongly each pair of features is related. Pick a metric from the dropdown — Cramér&#39;s V is a good default (0 = no association, 1 = perfect). Chi-squared shows the raw test statistic, and the p-value tells you if the result is statistically significant (smaller = more significant).</p>
       <div className="flex gap-3 items-center flex-wrap">
         <label className="text-sm text-muted">Metric:</label>
         <select
@@ -80,7 +81,7 @@ export default function CorrelationsTab({ correlations }: CorrelationsTabProps) 
                 {p.cramers_v.toFixed(4)}
               </span>
               <span className="text-xs text-muted">
-                p={p.p_value < 0.001 ? "<0.001" : p.p_value.toFixed(4)}
+                p={p.p_value < 0.001 ? p.p_value.toExponential(2) : p.p_value.toFixed(4)}
               </span>
             </div>
           ))}

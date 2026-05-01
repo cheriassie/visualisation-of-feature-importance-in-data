@@ -36,6 +36,7 @@ export default function FeatureImportanceTab({ featureImportance }: FeatureImpor
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-muted">Feature importance here is based on the association rules — it shows how often each feature appears in the mined rules and how strongly it contributes. The bar chart uses normalized values (0 to 1), where 1 means the most important feature. The radar chart gives a quick visual comparison of the top features.</p>
       <MetricCard label="Total Rules Analyzed" value={featureImportance.total_rules} className="inline-block" />
 
       <ChartPanel title="Normalized Feature Importance" height={350}>

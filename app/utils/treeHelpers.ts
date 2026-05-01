@@ -68,7 +68,7 @@ const increaseScale = d3.scaleThreshold<number, string>()
 
 const decreaseScale = d3.scaleThreshold<number, string>()
   .domain([3, 5])
-  .range(["#3498db", "#27ae60", "#16a085"]);
+  .range(["#93c5fd", "#3b82f6", "#1d4ed8"]);
 
 export function boosterColor(node: CoralTreeNode): string {
   const bv = node.booster_val ?? 0;

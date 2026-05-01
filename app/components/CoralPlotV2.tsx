@@ -17,7 +17,7 @@ interface CoralPlotV2Props {
   minSupport?: number;
 }
 
-const NODE_RADIUS = { root: 14, depth1: 10.5, default: 8.6 } as const;
+const NODE_RADIUS = { root: 18, depth1: 13, default: 10 } as const;
 
 export default function CoralPlotV2({
   tree,
@@ -203,15 +203,27 @@ export default function CoralPlotV2({
         if (showLabel) {
           const label = isRoot ? "Fatal" : nodeLabel(n, ln.depth);
           const onRight = lnX >= cx;
-          g.append("text")
-            .attr("x", lnX + (onRight ? 14 : -14))
-            .attr("y", lnY + (lnY >= cy ? 18 : -12))
+          const tx = lnX + (onRight ? 16 : -16);
+          const ty = lnY + (lnY >= cy ? 20 : -14);
+          const fontSize = isRoot ? 13 : 11;
+
+          const textEl = g.append("text")
+            .attr("x", tx)
+            .attr("y", ty)
             .attr("text-anchor", onRight ? "start" : "end")
             .attr("fill", "var(--foreground)")
-            .attr("font-size", isRoot ? 13 : 10)
-            .attr("font-weight", isRoot ? 700 : 400)
-            .attr("opacity", 0.85)
+            .attr("font-size", fontSize)
+            .attr("font-weight", isRoot ? 700 : 500)
             .text(label);
+
+          const bbox = (textEl.node() as SVGTextElement).getBBox();
+          g.insert("rect", ":last-child")
+            .attr("x", bbox.x - 2)
+            .attr("y", bbox.y - 1)
+            .attr("width", bbox.width + 4)
+            .attr("height", bbox.height + 2)
+            .attr("fill", "rgba(248,250,252,0.85)")
+            .attr("rx", 2);
         }
       }
     }
