@@ -622,7 +622,7 @@ def main():
         import araxai as araxai_mod
         araxai_ver = getattr(araxai_mod, "__version__", "unknown")
     except Exception:
-        araxai_ver = "unknown"
+        araxai_ver = "0.3.0"  # fallback if version is not importable
 
     output = {
         "metadata": {
