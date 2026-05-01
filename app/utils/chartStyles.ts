@@ -1,4 +1,4 @@
-/** Theme colour values mirroring CSS variables — use here for SVG/Recharts props that don't accept var() */
+/** Theme colour values mirroring CSS variables-use here for SVG/Recharts props that don't accept var() */
 export const THEME_COLORS = {
   muted: "#64748b",
   accent: "#2563eb",

@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Coral Plot — Feature Importance Visualization",
-  description: "Interactive visualization of association rules mined from UK road accident data",
+  title: "Feature Importance Visualization",
+  description: "Interactive visualization of association rules mined from UK road accident data (accidents.csv). Explore how different features relate to fatal outcomes and to each other.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

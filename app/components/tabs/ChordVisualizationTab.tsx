@@ -9,7 +9,7 @@ import CoralPlotV2 from "../CoralPlotV2";
 import DrillDownBarChart from "../DrillDownBarChart";
 import MetricCard from "../MetricCard";
 
-type SubView = "overview" | "chord" | "coral" | "drilldown" | "matrix" | "pairs";
+type SubView = "overview" | "coral" | "drilldown" | "co-occurrence";
 
 interface ChordVisualizationTabProps {
   chordData?: ChordData;
@@ -21,11 +21,9 @@ interface ChordVisualizationTabProps {
 
 const SUB_VIEWS: { key: SubView; label: string }[] = [
   { key: "overview", label: "Overview" },
-  { key: "chord", label: "Chord Network" },
   { key: "coral", label: "Coral Tree" },
   { key: "drilldown", label: "Drill-Down" },
-  { key: "matrix", label: "Matrix" },
-  { key: "pairs", label: "Pairs" },
+  { key: "co-occurrence", label: "Co-occurrence" },
 ];
 
 const PAIR_SORT_BUTTONS: { key: "value" | "source" | "target"; label: string }[] = [
@@ -103,7 +101,7 @@ export default function ChordVisualizationTab({
                 <h3 className="text-lg font-semibold mb-2 text-accent">Strongest Pair</h3>
                 <p className="text-sm">
                   <strong>{strongestPair.source}</strong> ↔ <strong>{strongestPair.target}</strong>
-                  {" — "}
+                  {"-"}
                   <span className="font-mono text-accent">{strongestPair.value} co-occurrences</span>
                 </p>
               </div>
@@ -119,19 +117,6 @@ export default function ChordVisualizationTab({
           </div>
         );
 
-      case "chord":
-        if (!chordData) return null;
-        return (
-          <div className="space-y-4">
-            <p className="text-sm text-muted">The chord diagram shows how often features appear together in association rules. Thicker ribbons mean more co-occurrences. Use the sliders to filter out weak or rare connections.</p>
-            <div className="glass-panel flex gap-6 flex-wrap items-end">
-              <RangeControl label="Max Connections" min={1} max={100} value={maxConnections} onChange={setMaxConnections} />
-              <RangeControl label="Min Relative Strength" min={0} max={1} step={0.01} value={minRelStrength} display={minRelStrength.toFixed(2)} onChange={setMinRelStrength} />
-            </div>
-            <ChordDiagram data={chordData} maxConnections={maxConnections} minRelativeStrength={minRelStrength} />
-          </div>
-        );
-
       case "coral":
         if (!coralTree) return null;
         return (
@@ -144,7 +129,7 @@ export default function ChordVisualizationTab({
               <RangeControl label="Min Support" min={0} max={1000} step={10} value={minSupport} onChange={setMinSupport} />
             </div>
             <div className="glass-panel text-xs space-y-3 text-muted">
-              <p className="text-fg text-sm mb-2">The coral plot shows association rules as a radial tree. The target class (Fatal) sits at the centre. Each branch is a rule condition — the further from the centre, the deeper the rule. Line colour shows whether a condition increases or decreases fatal risk, and how strongly.</p>
+              <p className="text-fg text-sm mb-2">The coral plot shows association rules as a radial tree. The target class (Fatal) sits at the centre. Each branch is a rule condition-the further from the centre, the deeper the rule. Line colour shows whether a condition increases or decreases fatal risk, and how strongly.</p>
               <div className="flex gap-5 flex-wrap items-center">
                 <span className="font-semibold text-fg">Node colour = feature</span>
                 <div className="flex items-center gap-1.5">
@@ -194,79 +179,103 @@ export default function ChordVisualizationTab({
       case "drilldown":
         return coralTree ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted">Click any bar to drill into its child conditions. The breadcrumb at the top lets you go back. Bar colour shows the direction — warm colours mean the condition increases fatal risk (×), cool blue means it decreases it (÷). The number on the right is the booster value.</p>
-            <DrillDownBarChart tree={coralTree} />
+            <div className="glass-panel text-sm space-y-2">
+              {targetInfo && (
+                <p>
+                  <strong>Target class:</strong>{" "}
+                  <span className="text-red-500 font-semibold">{targetInfo.target_class}</span>
+                  {"-baseline ratio: "}
+                  <span className="font-mono">{(targetInfo.baseline_ratio * 100).toFixed(2)}%</span>
+                </p>
+              )}
+              <p className="text-muted">
+                Each bar is a condition from the mined rules. The <strong>booster value</strong> shows how much this condition changes the fatal ratio relative to its parent node:
+                <span className="inline-block mx-1 font-mono text-orange-400">×</span>multiplies (increases risk),
+                <span className="inline-block mx-1 font-mono text-blue-400">÷</span>divides (decreases risk).
+                Click a bar to drill into its child conditions. Use the breadcrumb to navigate back.
+              </p>
+            </div>
+            <DrillDownBarChart tree={coralTree} targetInfo={targetInfo} />
           </div>
         ) : null;
 
-      case "matrix":
+      case "co-occurrence":
         if (!chordData) return null;
         return (
-          <div className="glass-panel overflow-x-auto">
-            <h3 className="text-lg font-semibold mb-3 text-accent">Co-occurrence Matrix</h3>
-            <p className="text-sm text-muted mb-3">Each cell shows how many rules contain both the row feature and the column feature. Higher values (darker blue) mean those two features are often found together in the mined rules.</p>
-            <table className="heatmap-table">
-              <thead>
-                <tr>
-                  <th />
-                  {chordData.features.map((f) => <th key={f}>{f}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {chordData.features.map((row, i) => (
-                  <tr key={row}>
-                    <th className="text-right">{row}</th>
-                    {chordData.features.map((_, j) => {
-                      const v = chordData.matrix[i][j];
-                      const alpha = Math.min(0.7, v / 50);
-                      return (
-                        <td
-                          key={j}
-                          style={{
-                            background: v > 0 ? `rgba(37,99,235,${alpha})` : "transparent",
-                            color: alpha > 0.4 ? "#fff" : "inherit",
-                          }}
-                        >
-                          {v}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        );
+          <div className="space-y-6">
+            <p className="text-sm text-muted">The ARAXAI pipeline produced {coralRuleCount ?? "a set of"} association rules. Each rule can use multiple features as conditions. The views below show which features tend to appear <strong>together in the same rule</strong> — this is not raw data overlap (every record contains all features), but a measure of how often the mining process found two features jointly relevant for explaining the target class.</p>
 
-      case "pairs":
-        if (!chordData) return null;
-        return (
-          <div className="glass-panel">
-            <h3 className="text-lg font-semibold mb-3 text-accent">Ranked Feature Pairs</h3>
-            <p className="text-sm text-muted mb-3">A flat list of all feature pairs sorted by how often they co-occur. You can re-sort by source or target name to find specific features faster.</p>
-            <div className="flex gap-3 mb-3">
-              {PAIR_SORT_BUTTONS.map(({ key, label }) => (
-                <button
-                  key={key}
-                  className={`btn ${pairSortKey === key ? "active" : ""}`}
-                  onClick={() => setPairSortKey(key)}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-accent">Chord Diagram</h3>
+              <p className="text-sm text-muted">A thicker ribbon between two features means more rules use both of them. Use the sliders to hide weaker connections.</p>
+              <div className="glass-panel flex gap-6 flex-wrap items-end">
+                <RangeControl label="Max Connections" min={1} max={100} value={maxConnections} onChange={setMaxConnections} />
+                <RangeControl label="Min Relative Strength" min={0} max={1} step={0.01} value={minRelStrength} display={minRelStrength.toFixed(2)} onChange={setMinRelStrength} />
+              </div>
+              <ChordDiagram data={chordData} maxConnections={maxConnections} minRelativeStrength={minRelStrength} />
             </div>
-            <div className="space-y-1 max-h-[500px] overflow-y-auto">
-              {sortedPairs.map((p, i) => (
-                <div key={i} className="flex items-center gap-3 text-sm py-1">
-                  <span className="w-6 text-right font-mono text-xs text-muted">{i + 1}</span>
-                  <span className="w-3 h-3 rounded-full" style={{ background: FEATURES[p.source]?.color ?? COLOR_NEUTRAL }} />
-                  <span>{p.source}</span>
-                  <span className="text-muted">↔</span>
-                  <span className="w-3 h-3 rounded-full" style={{ background: FEATURES[p.target]?.color ?? COLOR_NEUTRAL }} />
-                  <span>{p.target}</span>
-                  <span className="font-mono ml-auto text-accent">{p.value}</span>
-                </div>
-              ))}
+
+            <div className="glass-panel overflow-x-auto">
+              <h3 className="text-lg font-semibold mb-3 text-accent">Co-occurrence Matrix</h3>
+              <p className="text-sm text-muted mb-3">Each cell counts how many rules use both features as conditions. For example, Casualties × Hit_Objects_off = 26 means 26 rules include conditions on both.</p>
+              <table className="heatmap-table">
+                <thead>
+                  <tr>
+                    <th />
+                    {chordData.features.map((f) => <th key={f}>{f}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {chordData.features.map((row, i) => (
+                    <tr key={row}>
+                      <th className="text-right">{row}</th>
+                      {chordData.features.map((_, j) => {
+                        const v = chordData.matrix[i][j];
+                        const alpha = Math.min(0.7, v / 50);
+                        return (
+                          <td
+                            key={j}
+                            style={{
+                              background: v > 0 ? `rgba(37,99,235,${alpha})` : "transparent",
+                              color: alpha > 0.4 ? "#fff" : "inherit",
+                            }}
+                          >
+                            {v}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="glass-panel">
+              <h3 className="text-lg font-semibold mb-3 text-accent">Ranked Feature Pairs</h3>
+              <div className="flex gap-3 mb-3">
+                {PAIR_SORT_BUTTONS.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    className={`btn ${pairSortKey === key ? "active" : ""}`}
+                    onClick={() => setPairSortKey(key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-1 max-h-[500px] overflow-y-auto">
+                {sortedPairs.map((p, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm py-1">
+                    <span className="w-6 text-right font-mono text-xs text-muted">{i + 1}</span>
+                    <span className="w-3 h-3 rounded-full" style={{ background: FEATURES[p.source]?.color ?? COLOR_NEUTRAL }} />
+                    <span>{p.source}</span>
+                    <span className="text-muted">↔</span>
+                    <span className="w-3 h-3 rounded-full" style={{ background: FEATURES[p.target]?.color ?? COLOR_NEUTRAL }} />
+                    <span>{p.target}</span>
+                    <span className="font-mono ml-auto text-accent">{p.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         );

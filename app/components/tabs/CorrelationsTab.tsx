@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { CorrelationMatrices } from "../../types";
-import { type MetricKey, METRIC_LABELS, heatColor } from "../../utils/correlationHelpers";
+import { type MetricKey, METRIC_LABELS, heatColor, heatTextColor } from "../../utils/correlationHelpers";
 
 interface CorrelationsTabProps {
   correlations: CorrelationMatrices;
@@ -15,7 +15,7 @@ export default function CorrelationsTab({ correlations }: CorrelationsTabProps) 
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted">This heatmap shows how strongly each pair of features is related. Pick a metric from the dropdown — Cramér&#39;s V is a good default (0 = no association, 1 = perfect). Chi-squared shows the raw test statistic, and the p-value tells you if the result is statistically significant (smaller = more significant).</p>
+      <p className="text-sm text-muted">This heatmap shows how strongly each pair of features is statistically associated. Pick a metric from the dropdown — Cramér&#39;s V is a good default (0 = no association, 1 = perfect). Chi-squared (χ²) shows the raw test statistic — higher values mean stronger deviation from independence. With ~539k records in this dataset, all p-values are effectively zero (every association is statistically significant), so p-value is not shown as a separate metric — hover over any chi-squared cell to see it in the tooltip.</p>
       <div className="flex gap-3 items-center flex-wrap">
         <label className="text-sm text-muted">Metric:</label>
         <select
@@ -46,15 +46,24 @@ export default function CorrelationsTab({ correlations }: CorrelationsTabProps) 
                 <th className="text-right pr-2">{row}</th>
                 {columns.map((col) => {
                   const val = matrix[row]?.[col] ?? 0;
+                  const bg = heatColor(val, metric);
+                  const pVal = correlations.matrices.p_value?.[row]?.[col];
+                  const chi2Val = correlations.matrices.chi2?.[row]?.[col];
+                  let tooltip = `${row} × ${col}: ${typeof val === "number" ? val.toFixed(4) : val}`;
+                  if (metric === "chi2" && pVal != null) {
+                    tooltip += `\np-value: ${pVal === 0 ? "≈ 0" : pVal < 0.001 ? pVal.toExponential(2) : pVal.toFixed(4)}`;
+                  } else if (metric !== "chi2" && chi2Val != null) {
+                    tooltip += `\nχ²: ${chi2Val.toFixed(0)}`;
+                  }
                   return (
                     <td
                       key={col}
                       style={{
-                        background: heatColor(val, metric),
-                        color: "#1e293b",
+                        background: bg,
+                        color: heatTextColor(bg),
                         fontWeight: row === col ? 700 : 400,
                       }}
-                      title={`${row} × ${col}: ${typeof val === "number" ? val.toFixed(4) : val}`}
+                      title={tooltip}
                     >
                       {typeof val === "number" ? (metric === "chi2" ? val.toFixed(0) : val.toFixed(3)) : val}
                     </td>
@@ -79,9 +88,6 @@ export default function CorrelationsTab({ correlations }: CorrelationsTabProps) 
               <span className="font-medium">{p.col1} ↔ {p.col2}</span>
               <span className="font-mono text-accent">
                 {p.cramers_v.toFixed(4)}
-              </span>
-              <span className="text-xs text-muted">
-                p={p.p_value < 0.001 ? p.p_value.toExponential(2) : p.p_value.toFixed(4)}
               </span>
             </div>
           ))}
