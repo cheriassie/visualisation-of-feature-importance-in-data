@@ -1,7 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import type { ChordData, CoralTreeNode, FeatureImportance } from "../../types";
+
+function treeMaxDepth(node: CoralTreeNode): number {
+  if (!node.children?.length) return 0;
+  return 1 + Math.max(...node.children.map(treeMaxDepth));
+}
 import { FEATURES, COLOR_NEUTRAL } from "../../utils/chartStyles";
 import { sortPairs, networkDensity } from "../../utils/chordHelpers";
 import ChordDiagram from "../ChordDiagram";
@@ -66,7 +71,8 @@ export default function ChordVisualizationTab({
   targetInfo,
 }: ChordVisualizationTabProps) {
   const [view, setView] = useState<SubView>("coral");
-  const [maxDepth, setMaxDepth] = useState(3); // deeper trees hit layout limits fast
+  const actualMaxDepth = useRef(coralTree ? treeMaxDepth(coralTree) : 3).current;
+  const [maxDepth, setMaxDepth] = useState(actualMaxDepth);
   const [topN, setTopN] = useState(5); // more than 5 features per node overloads the radial render
   const [minBoosterVal, setMinBoosterVal] = useState(0);
   const [maxValuesPerAttr, setMaxValuesPerAttr] = useState(5);
@@ -122,7 +128,7 @@ export default function ChordVisualizationTab({
         return (
           <div className="space-y-4">
             <div className="glass-panel flex gap-6 flex-wrap items-end">
-              <RangeControl label="Max Depth" min={1} max={5} value={maxDepth} onChange={setMaxDepth} />
+              <RangeControl label="Max Depth" min={1} max={actualMaxDepth} value={maxDepth} onChange={setMaxDepth} />
               <RangeControl label="Top N Features" min={1} max={40} value={topN} onChange={setTopN} />
               <RangeControl label="Min Booster" min={0} max={10} step={0.5} value={minBoosterVal} display={minBoosterVal.toFixed(1)} onChange={setMinBoosterVal} />
               <RangeControl label="Max Values/Attr" min={1} max={15} value={maxValuesPerAttr} onChange={setMaxValuesPerAttr} />

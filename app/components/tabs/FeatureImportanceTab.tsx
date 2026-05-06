@@ -36,7 +36,7 @@ export default function FeatureImportanceTab({ featureImportance }: FeatureImpor
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted">Feature importance here is based on the association rules — it shows how often each feature appears in the mined rules and how strongly it contributes. The bar chart uses normalized values (0 to 1), where 1 means the most important feature. The radar chart gives a quick visual comparison of the top features.</p>
+      <p className="text-sm text-muted">The pipeline mined {featureImportance.total_rules} rules that explain conditions leading to fatal outcomes. A feature is &quot;important&quot; if it appears frequently across these rules. The <strong>normalised importance</strong> (0–1) is based on rule occurrence count: 1.0 = the feature that appears in the most rule nodes (count / max_count). Below, <strong>frequency</strong> = average number of times the feature appears per rule, <strong>avg ratio</strong> = mean booster value, <strong>max</strong> = highest booster value seen.</p>
       <MetricCard label="Total Rules Analyzed" value={featureImportance.total_rules} className="inline-block" />
 
       <ChartPanel title="Normalized Feature Importance" height={350}>

@@ -25,6 +25,7 @@ export default function RuleAnalyticsTab({ ruleAnalytics }: RuleAnalyticsTabProp
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-muted">This tab gives a statistical overview of all {ruleAnalytics.total_nodes} nodes across the {ruleAnalytics.total_rules} mined rules. Each node in a rule has a <strong>booster value</strong> — the factor by which it changes the fatal ratio relative to its parent. Nodes are categorised by strength: <strong>+</strong> (weak increase, booster &lt; 5), <strong>++</strong> (moderate, 5–10), <strong>+++</strong> (strong, ≥ 10), and <strong>÷</strong> (divisive — the condition <em>reduces</em> fatal risk). The pie chart shows the distribution across these categories. The stats below summarise the booster values (Ratio Stats), rule depths (Depth Stats), and divisive nodes specifically (Base Stats).</p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard label="Total Rules" value={ruleAnalytics.total_rules} />
         <MetricCard label="Total Nodes" value={ruleAnalytics.total_nodes} />

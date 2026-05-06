@@ -10,7 +10,7 @@ import { createD3Tooltip } from "../utils/d3helpers";
 interface CoralPlotV2Props {
   tree: CoralTreeNode;
   featureImportance?: FeatureImportance;
-  maxDepth?: number;
+  maxDepth: number;
   topN?: number;
   minBoosterVal?: number;
   maxValuesPerAttr?: number;
@@ -22,7 +22,7 @@ const NODE_RADIUS = { root: 18, depth1: 13, default: 10 } as const;
 export default function CoralPlotV2({
   tree,
   featureImportance,
-  maxDepth = 3,
+  maxDepth,
   topN = 15,
   minBoosterVal = 0,
   maxValuesPerAttr = 5,

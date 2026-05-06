@@ -18,7 +18,7 @@ export default function SummaryTab({ summary, metadata, targetInfo }: SummaryTab
     count,
     pct: summary.missing_percentages[col] ?? 0,
   }));
-
+  console.log('metadata', metadata);
   const uniquePerColumn = Object.entries(summary.unique_counts).map(([col, count]) => ({
     name: col,
     count,
